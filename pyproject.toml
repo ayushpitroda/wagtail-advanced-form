@@ -56,10 +56,10 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["advanced_form*"]   # 👈 FIXED
+include = ["wagtail_advanced_form*"]   # ✅ Correct package name
 
 [tool.setuptools.package-data]
-advanced_form = [              # 👈 FIXED
+wagtail_advanced_form = [              # ✅ Match package name
     "templates/**/*.html",
     "static/**/*",
 ]
