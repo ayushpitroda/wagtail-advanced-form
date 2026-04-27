@@ -1,0 +1,240 @@
+{% load wagtailcore_tags advanced_form_tags extra_tags widget_tweaks crispy_forms_filters %}
+<section class="s-form dark-theme position-relative z-index-1">
+    <div class="container container-anim-js s-form__container position-relative z-index-1">
+        <div class="s-form__block mx-auto w-100 light-theme">
+{% if value.form %}
+    {% with form_page=value.form.specific %}
+        {% get_form_context form_page as form_fields %}
+
+{% if form_fields.success %}
+    {{ form_fields.thank_you_text|richtext }}
+{% else %}
+    <form method="POST" id="form-{{ form_page.id }}"  class="s-form__block-row row" enctype="multipart/form-data" >
+        {% csrf_token %}
+        <input type="hidden" name="form_id" value="{{ form_page.id }}">
+
+        {% for field in form_fields.form.visible_fields %}
+        {% if field.field.widget|klass == "ReCaptchaV2Checkbox" %}
+    <div data-field-name="{{ field.label|clean_label }}" class="s-form__block-item s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <div class="captcha-field">
+        {{ field }}
+        {% if field.errors %}
+        <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% elif field.field.widget|klass == "Textarea" %}
+    <div data-field-name="{{ field.label|clean_label }}" class="s-form__block-item s-form__col batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" rows="3" placeholder="Type your question, comment or feedback here..." %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.field.widget|klass == "Select" %}
+    <div data-field-name="{{ field.label|clean_label }}"  class="s-form__block-item select-wrap-js s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" %}
+        <div class="input-placeholder position-absolute">Select Type</div>
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.field.widget|klass == "CheckboxSelectMultiple" or field.field.widget|klass == "CheckboxInput" or field.field.widget|klass == "RadioSelect" or field.field.widget|klass == "RadioSelectMultiple" %}
+    <div data-field-name="{{ field.label|clean_label }}" class="s-form__block-item s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="checkbox-wrap" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.html_name == "phone" or field.field.widget|klass == "PhoneNumberInternationalFallbackWidget" %}
+    <div data-field-name="{{ field.label|clean_label }}" class="s-form__block-item s-form__col col-md-6 col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field type="tel" class+="form-control" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% else %}
+    <div data-field-name="{{ field.label|clean_label }}" class="s-form__block-item s-form__col col-md-6 col-12 batch-hero-item-js batch-item-js batch-item--static-js" data-other="{{ field.field.help_text }}">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+    {% endif %}
+
+  {% endfor %}
+
+
+
+        
+
+        <div class="s-form__block-item s-form__block-item--btn-wrap s-form__col s-form__btn-wrap batch-hero-item-js batch-item-js batch-item--static-js">
+    <button class="btn btn--secondary text-normal s-form__block-btn fw-400" type="submit">Submit</button>
+  </div>
+    </form>
+{% endif %}
+</div></div>
+
+</section>
+    
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
+/>
+
+<script>
+const rules_{{ value.form.id }} = {{ form_fields.conditional_rules|safe }};
+
+function getFieldValue(fieldName) {
+    console.log(`Getting value for field "${fieldName}"`);
+
+    // 👉 Find wrapper using data-field-name
+    let wrapper = document.querySelector(`[data-field-name="${fieldName}"]`);
+    if (!wrapper) return null;
+
+    // 👉 Find actual input/select/textarea inside it
+    let fields = wrapper.querySelectorAll("input, select, textarea");
+    if (!fields.length) return null;
+
+    // Handle radio group
+    if (fields[0].type === "radio") {
+        let checked = wrapper.querySelector("input[type='radio']:checked");
+        return checked ? checked.value : null;
+    }
+
+    // Handle multiple checkboxes
+    if (fields[0].type === "checkbox") {
+        let checked = wrapper.querySelectorAll("input[type='checkbox']:checked");
+        return Array.from(checked).map(el => el.value); // array of values
+    }
+
+    // Default (input, select, textarea)
+    let field = fields[0];
+    console.log(`Value of field "${fieldName}":`, field.value);
+
+    return field.value;
+}
+function resetField(wrapper) {
+    let fields = wrapper.querySelectorAll("input, select, textarea");
+
+    fields.forEach(field => {
+        if (field.type === "radio" || field.type === "checkbox") {
+            field.checked = false;
+        } else {
+            field.value = "";
+        }
+    });
+}
+
+function evaluateConditions() {
+    rules_{{ value.form.id }}.forEach(rule => {
+
+        // 👉 Step 1: Group conditions by field
+        let grouped = {};
+        rule.conditions.forEach(cond => {
+            if (!grouped[cond.field]) {
+                grouped[cond.field] = [];
+            }
+            grouped[cond.field].push(cond);
+        });
+
+        // 👉 Step 2: Evaluate each field group (OR inside group)
+        let groupResults = [];
+
+        Object.keys(grouped).forEach(fieldName => {
+            let fieldValue = getFieldValue(fieldName);
+            let fieldMatched = false;
+
+            grouped[fieldName].forEach(cond => {
+
+                if (cond.operator === "equals" && fieldValue == cond.value) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "not_equals" && fieldValue != cond.value) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "gt" && parseFloat(fieldValue) > parseFloat(cond.value)) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "gte" && parseFloat(fieldValue) >= parseFloat(cond.value)) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "lt" && parseFloat(fieldValue) < parseFloat(cond.value)) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "lte" && parseFloat(fieldValue) <= parseFloat(cond.value)) {
+                    fieldMatched = true;
+                }
+
+                if (cond.operator === "empty") {
+                    fieldMatched = !fieldValue || fieldValue.length === 0;
+                }
+
+                if (cond.operator === "not_empty") {
+                    fieldMatched = fieldValue && fieldValue.length > 0;
+                }
+            });
+
+            groupResults.push(fieldMatched);
+        });
+
+        // 👉 Step 3: Apply AND / OR between groups
+        let matched;
+
+        if (rule.condition_logic === "or") {
+            matched = groupResults.some(Boolean);   // ANY true
+        } else {
+            matched = groupResults.every(Boolean);  // ALL true (default AND)
+        }
+
+        // 👉 Step 4: Apply action
+        let target = document.querySelector(`[data-field-name="${rule.target}"]`);
+
+        console.log("Evaluating:", rule.target, "Groups:", groupResults, "Final:", matched);
+
+        if (target) {
+            if (rule.action === "show") {
+                target.style.display = matched ? "block" : "none";
+                if (!matched) {
+                    resetField(target);
+                }
+            } else if (rule.action === "hide") {
+                target.style.display = matched ? "none" : "block";
+                 if (matched) {
+                    resetField(target);
+                }
+            }
+        }
+    });
+}
+
+// Run on load
+document.addEventListener("DOMContentLoaded", evaluateConditions);
+
+// Run on change
+document.querySelectorAll("[data-field-name] input, [data-field-name] select")
+    .forEach(el => {
+        el.addEventListener("change", evaluateConditions);
+    });
+</script>
+    {% endwith %}
+{% endif %}

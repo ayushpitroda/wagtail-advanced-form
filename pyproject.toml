@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wagtail-advanced-form"
+version = "1.0.0"
+description = "A reusable Wagtail app providing advanced form pages with conditional logic, image/file uploads, and autoresponder emails."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+
+authors = [
+    { name = "Your Name", email = "you@example.com" },
+]
+
+keywords = ["wagtail", "django", "forms", "cms"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Wagtail",
+    "Framework :: Wagtail :: 5",
+    "Framework :: Wagtail :: 6",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "wagtail>=5.0",
+    "django>=4.2",
+    "django-modelcluster>=6.0",
+    "wagtail-django-recaptcha>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-django",
+    "black",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/ayushpitroda/wagtail-advanced-form"
+Repository = "https://github.com/ayushpitroda/wagtail-advanced-form"
+"Bug Tracker" = "https://github.com/ayushpitroda/wagtail-advanced-form/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["advanced_form*"]   # 👈 FIXED
+
+[tool.setuptools.package-data]
+advanced_form = [              # 👈 FIXED
+    "templates/**/*.html",
+    "static/**/*",
+]

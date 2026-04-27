@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+recursive-include wagtail_advanced_form/templates *
+recursive-include wagtail_advanced_form/static *
+recursive-include wagtail_advanced_form/migrations *
+global-exclude __pycache__
+global-exclude *.py[co]

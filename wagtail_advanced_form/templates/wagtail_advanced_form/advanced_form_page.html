@@ -1,0 +1,113 @@
+{% load static wagtailcore_tags wagtailimages_tags widget_tweaks crispy_forms_filters extra_tags %}
+  <section class="s-form dark-theme position-relative z-index-1">
+    <div class="overlay s-form__overlay after-el after-el--full before-el before-el--full z-index-0">
+      {% image page.form_background_image original as img %}
+      <img class="w-100 h-100 obj-cover s-form__overlay-pic" loading="lazy" src="{{img.url}}" alt="">
+    </div>
+    <div class="container container-anim-js s-form__container position-relative z-index-1">
+      <div class="s-form__heading text-center last-el-mb-0">
+        <h1
+          class="s-form__title batch-hero-item-js batch-item-js batch-item--text-js split-text-init-js split-text-lines-js">
+          {{page.form_section_title|safe}}
+        </h1>
+        <div
+          class="s-form__txt-wrap mx-auto w-100 body-2 color-1 last-el-mb-0 batch-hero-item-js batch-item-js batch-item--text-js split-text-init-js split-text-lines-js">
+          <p>{{page.form_section_text|safe}} </p>
+        </div>
+        <div class="s-form__btns d-flex flex-wrap justify-content-center">
+          <div class="s-simple-txt__btn-wrap  batch-hero-item-js batch-item-js batch-item--static-js">
+            <a href="#" class="btn s-simple-txt__btn btn--secondary">Primary Action</a>
+          </div>
+          <div class="s-simple-txt__btn-wrap  batch-hero-item-js batch-item-js batch-item--static-js">
+            <a href="#" class="btn s-simple-txt__btn color-1">Secondary Action</a>
+          </div>
+        </div>
+      </div>
+      <div class="s-form__block mx-auto w-100 light-theme">
+        <div class="s-form__block-heading">
+          <h2 class="s-form__title h3  batch-hero-item-js batch-item-js batch-item--static-js">Send a Message</h2>
+          <div
+            class="s-form__txt-wrap ls-1 last-el-mb-0  batch-hero-item-js batch-item-js batch-item--static-js last-el-mb-0">
+            <p>Please enter your details into the fields below, we will respond to your enquiry within 2 working days.
+              An asterisk (*) indicates required fields.</p>
+          </div>
+        </div>
+        <form action="{% pageurl page %}" id="wagtail-form" enctype="multipart/form-data" method="POST" class="s-form__block-row row">
+  {% csrf_token %}
+  {{ form.media }}
+
+  {% for field in form.visible_fields %}
+  {{field.name}}----------------
+
+    {% if field.field.widget|klass == "ReCaptchaV2Checkbox" %}
+    <div class="s-form__block-item s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <div class="captcha-field">
+        {{ field }}
+        {% if field.errors %}
+        <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% elif field.field.widget|klass == "Textarea" %}
+    <div class="s-form__block-item s-form__col batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" rows="3" placeholder="Type your question, comment or feedback here..." %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.field.widget|klass == "Select" %}
+    <div class="s-form__block-item select-wrap-js s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" %}
+        <div class="input-placeholder position-absolute">Select Type</div>
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.field.widget|klass == "CheckboxSelectMultiple" or field.field.widget|klass == "CheckboxInput" or field.field.widget|klass == "RadioSelect" or field.field.widget|klass == "RadioSelectMultiple" %}
+    <div class="s-form__block-item s-form__col col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="checkbox-wrap" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% elif field.html_name == "phone" or field.field.widget|klass == "PhoneNumberInternationalFallbackWidget" %}
+    <div class="s-form__block-item s-form__col col-md-6 col-12 batch-hero-item-js batch-item-js batch-item--static-js">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field type="tel" class+="form-control" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+
+    {% else %}
+    <div class="s-form__block-item s-form__col col-md-6 col-12 batch-hero-item-js batch-item-js batch-item--static-js" data-other="{{ field.field.help_text }}">
+      <label for="{{ field.id_for_label }}">{{ field.field.label }}{% if field.field.required %}<sup>*</sup>{% endif %}</label>
+      <div class="input-wrap position-relative">
+        {% render_field field class+="form-control" %}
+      </div>
+      {% if field.field.help_text and field.field.help_text != "other" %}<small>{{ field.field.help_text|safe }}</small>{% endif %}
+      {{ field.errors }}
+    </div>
+    {% endif %}
+
+  {% endfor %}
+
+  <div class="s-form__block-item s-form__block-item--btn-wrap s-form__col s-form__btn-wrap batch-hero-item-js batch-item-js batch-item--static-js">
+    <button class="btn btn--secondary text-normal s-form__block-btn fw-400" type="submit">Send Message</button>
+  </div>
+</form>
+      </div>
+    </div>
+  </section>
+</div>
